@@ -1,78 +1,79 @@
+# app.py — Dashboard Streamlit (tema azul escuro)
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import joblib
 
-# Configurações de layout e tema
 st.set_page_config(
     page_title="Fake News Detector - Reprodução Científica",
     page_icon="🧠",
     layout="wide",
 )
 
-# ====== Estilo ======
+# ====== Estilo (tema escuro/azul) ======
 st.markdown("""
 <style>
-body {
-    background-color: #0E1117;
-    color: #FAFAFA;
-}
-h1, h2, h3 {
-    color: #00B4FF;
-}
-.sidebar .sidebar-content {
-    background: #0E1117;
-}
-.metric-table td, .metric-table th {
-    text-align: center !important;
-}
+:root { --blue:#00B4FF; }
+html, body, [class*="css"]  { background-color:#0E1117; color:#FAFAFA; }
+h1,h2,h3 { color: var(--blue) !important; }
+section.main > div { padding-top: 1rem; }
+.block-container { padding-top: 1.2rem; }
+.dataframe tbody tr th, .dataframe thead th { color:#FAFAFA !important; }
+.stButton>button { background:#122033; border:1px solid #1f3a5b; color:#fff; }
+.stButton>button:hover { background:#16304d; }
 </style>
 """, unsafe_allow_html=True)
 
 # ====== Cabeçalho ======
 st.title("🧠 Detecção de Fake News em Português")
-st.subheader("Reprodução científica baseada no artigo da SBC (Fagundes et al., 2024)")
+st.subheader("Reprodução científica baseada em Fagundes et al. (SBC, 2024)")
 
 # ====== Seção 1: Tabela de métricas ======
 st.header("📊 Resultados dos Modelos")
-
 dados = {
     "Modelo": ["Baseline (TF-IDF)", "POS + TF-IDF"],
     "Acurácia": [0.98, 0.98],
     "Precisão": [0.98, 0.98],
     "Recall": [0.98, 0.98],
-    "F1-Score": [0.98, 0.98]
+    "F1-Score": [0.98, 0.98],
 }
+st.table(pd.DataFrame(dados))
 
-df = pd.DataFrame(dados)
-st.table(df)
-
-# ====== Seção 2: Gráfico de F1 ======
+# ====== Seção 2: Gráfico de F1 (imagem gerada no Colab) ======
 st.header("📈 Comparação de F1-Score")
 st.image("grafico_comparativo.png", use_column_width=True)
 
-# ====== Seção 3: Matriz de confusão ======
+# ====== Seção 3: Matriz de Confusão (imagem) ======
 st.header("🧮 Matriz de Confusão (Modelo POS + TF-IDF)")
-st.image("matriz_confusao.png", caption="Modelo POS + TF-IDF", use_column_width=True)
+st.image("matriz_confusao.png", caption="Matriz de confusão em teste", use_column_width=True)
 
 # ====== Seção 4: Teste de notícia ======
-st.header("🗞️ Teste uma Notícia")
-texto = st.text_area("Digite ou cole uma notícia em português para classificar:")
+st.header("🗞️ Teste uma notícia")
+texto = st.text_area("Cole uma notícia em português para classificar:", height=180,
+                     placeholder="Ex.: 'Governo anuncia que...'")
 
-if st.button("Classificar notícia"):
-    if texto.strip():
-        modelo = joblib.load("modelo.pkl")
-        vectorizer = joblib.load("vectorizer.pkl")
-        vetor = vectorizer.transform([texto])
-        pred = modelo.predict(vetor)[0]
-        resultado = "🟥 FAKE NEWS" if pred == 0 else "🟩 NOTÍCIA REAL"
-        st.subheader(f"Resultado: {resultado}")
-    else:
-        st.warning("Por favor, digite um texto antes de classificar.")
+col_a, col_b = st.columns([1,3])
+with col_a:
+    if st.button("Classificar notícia"):
+        if texto.strip():
+            # Carrega o pipeline completo (TF-IDF + SVM)
+            modelo = joblib.load("modelo.pkl")
+            # Predição direta a partir do texto cru
+            pred = int(modelo.predict([texto])[0])
+            label = "🟩 NOTÍCIA REAL" if pred == 1 else "🟥 FAKE NEWS"
+            st.subheader(f"Resultado: {label}")
+        else:
+            st.warning("Por favor, digite um texto antes de classificar.")
+
+with col_b:
+    st.info(
+        "Este classificador usa um **pipeline TF-IDF + LinearSVM** treinado no corpus **Fake.Br** "
+        "(3.600 reais / 3.600 falsas). Os resultados de reprodução indicaram **F1 ≈ 0.98** tanto no "
+        "baseline quanto com **POS**, confirmando as conclusões do artigo (ganho marginal com sintaxe superficial)."
+    )
 
 # ====== Rodapé ======
 st.markdown("""
 ---
-Projeto desenvolvido para a disciplina **Aprendizagem de Máquina - UNIFESSPA (2025)**  
-Reprodução científica baseada em *Fagundes et al. (2024)* – Sociedade Brasileira de Computação.
+Projeto para **Aprendizagem de Máquina — UNIFESSPA (2025)**.  
+Reprodução científica baseada em *Fagundes, Roman & Digiampietri (2024), SBC*.
 """)
