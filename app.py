@@ -38,14 +38,18 @@ dados = {
 }
 st.table(pd.DataFrame(dados))
 
-# ====== Seção 2: Gráfico de F1 (imagem gerada no Colab) ======
-st.header("📈 Comparação de F1-Score")
-st.image("grafico_comparativo.png", use_column_width=True)
+st.header("📊 Visões lado a lado")
 
-# ====== Seção 3: Matriz de Confusão (imagem) ======
-st.header("🧮 Matriz de Confusão (Modelo POS + TF-IDF)")
-st.image("matriz_confusao.png", caption="Matriz de confusão em teste", use_column_width=True)
+col1, col2 = st.columns(2, gap="large")
 
+with col1:
+    st.subheader("📈 F1-Score (comparação)")
+    st.image("grafico_comparativo.png", use_column_width=True)
+
+with col2:
+    st.subheader("🧮 Matriz de Confusão")
+    st.image("matriz_confusao.png", use_column_width=True)
+    
 # ====== Seção 4: Teste de notícia ======
 st.header("🗞️ Teste uma notícia")
 texto = st.text_area("Cole uma notícia em português para classificar:", height=180,
@@ -77,3 +81,4 @@ st.markdown("""
 Projeto para **Aprendizagem de Máquina — UNIFESSPA (2025)**.  
 Reprodução científica baseada em *Fagundes, Roman & Digiampietri (2024), SBC*.
 """)
+
