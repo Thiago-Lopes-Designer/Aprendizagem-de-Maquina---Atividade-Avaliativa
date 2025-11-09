@@ -3,6 +3,9 @@ import os
 import joblib
 import pandas as pd
 import streamlit as st
+import os
+st.caption(f"📦 Tamanho do modelo.pkl: {round(os.path.getsize('modelo.pkl')/1e6, 2)} MB")
+
 
 # ----------------- Config -----------------
 st.set_page_config(
@@ -124,3 +127,4 @@ st.markdown(
     Reprodução científica baseada em *Fagundes, Roman & Digiampietri (2024), SBC*.
     """
 )
+
