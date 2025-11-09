@@ -57,16 +57,31 @@ texto = st.text_area("Cole uma notícia em português para classificar:", height
 
 col_a, col_b = st.columns([1,3])
 with col_a:
-    if st.button("Classificar notícia"):
-        if texto.strip():
-            # Carrega o pipeline completo (TF-IDF + SVM)
-            modelo = joblib.load("modelo.pkl")
-            # Predição direta a partir do texto cru
-            pred = int(modelo.predict([texto])[0])
-            label = "🟩 NOTÍCIA REAL" if pred == 1 else "🟥 FAKE NEWS"
-            st.subheader(f"Resultado: {label}")
+    @st.cache_resource
+def load_model():
+    try:
+        model = joblib.load("modelo.pkl")
+        return model
+    except Exception as e:
+        st.error(f"❌ Erro ao carregar modelo: {e}")
+        return None
+
+modelo = load_model()
+
+if st.button("Classificar notícia"):
+    if texto.strip():
+        if modelo is not None:
+            try:
+                pred = int(modelo.predict([texto])[0])
+                label = "🟩 NOTÍCIA REAL" if pred == 1 else "🟥 FAKE NEWS"
+                st.subheader(f"Resultado: {label}")
+            except Exception as e:
+                st.error(f"❌ Erro durante a predição: {type(e).__name__} — {e}")
         else:
-            st.warning("Por favor, digite um texto antes de classificar.")
+            st.error("❌ Modelo não carregado. Verifique se o arquivo modelo.pkl está presente.")
+    else:
+        st.warning("Por favor, digite um texto antes de classificar.")
+
 
 with col_b:
     st.info(
@@ -81,4 +96,5 @@ st.markdown("""
 Projeto para **Aprendizagem de Máquina — UNIFESSPA (2025)**.  
 Reprodução científica baseada em *Fagundes, Roman & Digiampietri (2024), SBC*.
 """)
+
 
